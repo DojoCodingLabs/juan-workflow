@@ -1,6 +1,6 @@
 {
   "name": "juan-workflow",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "The non-engineer's development guardrails. A full dev lifecycle workflow — from spike to PR to review — built by a Head of Product who got tired of asking engineers for permission to ship. By Dojo Coding Labs.",
   "author": {
     "name": "Dojo Coding Labs",
