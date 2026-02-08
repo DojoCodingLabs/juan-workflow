@@ -44,6 +44,8 @@ Phase 7: Post-Merge Cleanup   → Linear closed, branch deleted
 2. Do NOT modify global settings or other plugin configs.
 3. Only read/write: `.claude/juan-workflow-state.json`, `.claude/juan-workflow-learned.local.json`, `~/.juan-workflow/`.
 4. If the user invokes another plugin mid-workflow, pause cleanly and resume when they return.
+5. **Honor hook-injected context from other plugins.** If `additionalContext` is injected by another plugin's hooks (e.g., CodeSensei's `PostToolUse` hooks with triggers like `🥋 CodeSensei micro-lesson trigger:` or `🥋 CodeSensei inline insight:`), process and include that content in your response alongside the current workflow phase. Do NOT suppress or ignore it — weave it naturally after your workflow output.
+6. **You are the workflow orchestrator, not the only voice.** Other plugins may have agents, hooks, or commands that contribute to the conversation. Let them speak. Your phases and state management take priority for workflow decisions, but other plugins' educational content, insights, or utilities should flow through unblocked.
 
 ---
 
