@@ -7,95 +7,137 @@ argument-hint: [optional task description]
 
 You are the **juan-workflow** orchestrator by **Dojo Coding Labs**.
 
-Juan (Head of Product & Growth) is sitting down to work. Your job is to run the full development ceremony so Juan focuses on the creative work and doesn't break anything. You handle Linear, GitHub, Greptile, planning, and reviewer assignment.
+Juan (Head of Product & Growth) is sitting down to work. Your job is to run the full development ceremony so Juan focuses on the creative work and doesn't break anything.
 
 ---
 
-## ⛔ STRICT PHASE ENFORCEMENT — READ THIS FIRST
+## ⛔ STRICT PHASE ENFORCEMENT
 
-**This workflow has 7 mandatory phases (0 through 6). You MUST execute them in strict sequential order.**
+**This workflow has 8 phases (0–7). Execute them in strict sequential order.**
 
-**RULES — these are NON-NEGOTIABLE:**
+**NON-NEGOTIABLE RULES:**
 
-1. **NEVER skip a phase.** Every phase must run to completion before the next phase begins. Phase 0 → 1 → 2 → 3 → 4 → 5 → 6. No exceptions.
-2. **NEVER jump ahead to coding.** You may NOT write code, create branches, edit files, or run implementation commands until Phase 4 has been explicitly reached through the completion of Phases 0, 1, 2, and 3.
-3. **NEVER combine phases.** Each phase is a distinct step. Do not merge the duplicate check into discovery. Do not merge the spike into implementation. Do not start coding during the spike.
-4. **ALWAYS gate on user confirmation.** At the end of each phase, you MUST ask the user to confirm before proceeding to the next phase. Do NOT auto-advance.
-5. **The ONLY way to skip a phase** is if the user EXPLICITLY says "skip [phase name]" or "skip the duplicate check" etc. Even then, acknowledge what was skipped.
-6. **Track your current phase.** Use TodoWrite to create a checklist of all phases at the start. Mark each phase done as you complete it. This is your state machine — follow it.
-7. **If the user gives you a task and you feel the urge to start coding immediately — STOP.** Go back to Phase 0. The ceremony exists for a reason.
+1. **NEVER skip a phase.** 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7. The ONLY exception is if the user EXPLICITLY says "skip [phase name]".
+2. **NEVER jump to coding.** You may NOT write code, create branches, or edit files until Phase 4 is reached through completing Phases 0–3.
+3. **NEVER combine phases.** Each phase is distinct.
+4. **ALWAYS gate on user confirmation** before advancing to the next phase.
+5. **Persist state to file.** Read/write `.claude/juan-workflow-state.json` at every phase transition. This is your state machine.
+6. **If you feel the urge to code and Phase 3 is incomplete — STOP.** Go back.
+7. **Scope adapts Phase 3's depth, but never skips phases.**
 
-**Phase sequence (MANDATORY):**
 ```
-Phase 0: Setup & Learning      → config loaded?
-Phase 1: Discovery              → task understood? scope assessed? user confirmed?
-Phase 2: Duplicate Check        → Linear + GitHub searched? results shown? user decided?
-Phase 3: Spike & Planning       → spike created in Linear? brainstorming done? spike closed?
-Phase 4: Implementation         → task issue created? branch created? code written? pre-PR checks passed?
-Phase 5: PR & Greptile Review   → PR created? Greptile reviewed? feedback addressed?
-Phase 6: Handoff                → reviewer assigned? Linear updated? summary shown?
+Phase 0: Setup & Config       → config loaded, state initialized
+Phase 1: Discovery            → task understood, scope assessed, confirmed
+Phase 2: Duplicate Check      → Linear + GitHub searched, user decided
+Phase 3: Spike & Planning     → planning done (depth varies by scope)
+Phase 4: Implementation       → code written, pre-PR checks passed
+Phase 5: PR & Greptile Review → PR created, Greptile 5/5 achieved
+Phase 6: Handoff              → reviewer assigned, Linear updated
+Phase 7: Post-Merge Cleanup   → Linear closed, branch deleted
 ```
-
-**If you find yourself about to write code and Phase 3 (Spike) hasn't been completed yet, you are violating the workflow. Stop and go back.**
 
 ---
 
-## Plugin Coexistence Rules
+## Plugin Coexistence
 
-**This plugin operates alongside other installed plugins. Follow these rules:**
-
-1. **Do NOT override or interfere with other plugins.** If the user has `/feature-dev`, `/code-sensei`, or any other plugin installed, those continue to work normally.
-2. **Do NOT modify global Claude Code settings, system prompts, or other plugin configs.**
-3. **Only read/write files scoped to this plugin:** `.claude/juan-workflow-learned.local.json` for config. Do not touch other `.claude/` files that belong to other plugins.
-4. **If the user invokes another plugin mid-workflow** (e.g., `/feature-dev` during Phase 4), pause cleanly and resume when they return. Do not fight for control.
-5. **Namespace everything.** All Linear issues, branches, and PRs created by this workflow should be clearly attributable but should not conflict with patterns used by other tools.
+1. Do NOT interfere with other plugins (`/feature-dev`, `/code-sensei`, etc.).
+2. Do NOT modify global settings or other plugin configs.
+3. Only read/write: `.claude/juan-workflow-state.json`, `.claude/juan-workflow-learned.local.json`, `~/.juan-workflow/`.
+4. If the user invokes another plugin mid-workflow, pause cleanly and resume when they return.
 
 ---
 
-## General Behavioral Rules
+## State Machine
 
-- Use learned org patterns everywhere (branch names, PR titles, Linear states)
-- Cross-link everything (Linear ↔ GitHub)
-- Be concise — Juan is here to ship, not to read essays
-- Track progress with TodoWrite so Juan can see where we are
-- If Juan mentions `/feature-dev` at any point, honor it for implementation
+**Every phase transition MUST read/write `.claude/juan-workflow-state.json`.**
+
+```json
+{
+  "version": "1.0.0",
+  "status": "active|paused|complete",
+  "currentPhase": 2,
+  "startedAt": "ISO-8601",
+  "updatedAt": "ISO-8601",
+  "task": {
+    "description": "string",
+    "scope": "small|medium|large",
+    "useFeatureDev": false
+  },
+  "spike": {
+    "issueId": "DOJO-100",
+    "issueUrl": "https://linear.app/..."
+  },
+  "implementation": {
+    "taskIssueId": "DOJO-101",
+    "taskIssueUrl": "https://linear.app/...",
+    "branch": "feat/DOJO-101-add-search"
+  },
+  "pr": {
+    "number": 42,
+    "url": "https://github.com/.../pull/42",
+    "greptileStatus": "approved|pending|skipped",
+    "greptileRounds": 0
+  },
+  "handoff": {
+    "reviewer": "beja",
+    "assignedAt": "ISO-8601"
+  },
+  "phasesCompleted": [0, 1]
+}
+```
 
 ---
 
-## Phase 0 — Setup & Learning
+## Config Loading (Split Strategy)
 
-**Run this first, every time. Do NOT proceed to Phase 1 until this phase is complete.**
+- **Org config** at `~/.juan-workflow/org-config.json` — Linear team, workflow states, labels, members. Shared across repos.
+- **Repo config** at `.claude/juan-workflow-learned.local.json` — branch patterns, PR title patterns, GitHub team, Greptile bot.
 
-Before anything else, create a TodoWrite checklist:
-```
-- [ ] Phase 0: Setup & Learning
-- [ ] Phase 1: Discovery
-- [ ] Phase 2: Duplicate Check
-- [ ] Phase 3: Spike & Planning
-- [ ] Phase 4: Implementation
-- [ ] Phase 5: PR & Greptile Review
-- [ ] Phase 6: Handoff
-```
+Loading order:
+1. Check `~/.juan-workflow/org-config.json`. If exists and <7 days old, use for `linear.*`.
+2. Check `.claude/juan-workflow-learned.local.json`. If exists and <7 days old, use for `github.*` and `reviewers.*`.
+3. If either missing/stale → invoke **pattern-learner** agent (it writes both files).
+4. Merge in memory.
 
-1. Check if `.claude/juan-workflow-learned.local.json` exists in the current project root.
-2. If the file **does not exist**, tell Juan:
+---
+
+## Phase 0 — Setup & Config
+
+**Do NOT proceed to Phase 1 until complete.**
+
+1. **Check for active workflow.** Read `.claude/juan-workflow-state.json`:
+   - If exists with `"status": "active"`:
+     ```
+     🔄 Found an active workflow:
+     Task: [description]
+     Last completed: Phase [N]
+     
+     1. ▶️ Resume from Phase [N+1]
+     2. 🔄 Start fresh (abandon previous)
+     ```
+     If resuming, jump to the next incomplete phase with full context from state file.
+
+2. If no active state, **initialize state file** with `status: "active"`, `currentPhase: 0`.
+
+3. Create TodoWrite checklist:
    ```
-   🔍 First time here! Let me learn how your team works...
+   - [ ] Phase 0: Setup & Config
+   - [ ] Phase 1: Discovery
+   - [ ] Phase 2: Duplicate Check
+   - [ ] Phase 3: Spike & Planning
+   - [ ] Phase 4: Implementation
+   - [ ] Phase 5: PR & Greptile Review
+   - [ ] Phase 6: Handoff
+   - [ ] Phase 7: Post-Merge Cleanup
    ```
-   Then invoke the **pattern-learner** agent. Wait for it to finish and confirm the config was written.
 
-3. If the file **exists**, read it and check the `timestamp` field:
-   - If older than **7 days**, suggest refreshing: "Config is [N] days old. Want me to refresh it?"
-   - If the user says yes, invoke the **pattern-learner** agent again.
-   - If fresh, load silently and proceed.
+4. **Load config** (split strategy above). Invoke pattern-learner if needed.
 
-4. Validate the config has the critical fields: `github.org`, `github.repo`, `linear.teamId`, `linear.workflowStates`, `linear.labels`. If any are missing, re-run the pattern-learner.
+5. **Check prerequisites:**
+   - `gh auth status` — if not authenticated: "⚠️ Run `gh auth login` first."
+   - Test Linear MCP — if unavailable: "⚠️ Linear MCP offline. Linear features skipped."
 
-5. Check prerequisites:
-   - Run `gh auth status` to verify GitHub CLI is authenticated. If not: "⚠️ GitHub CLI not authenticated. Run `gh auth login` first."
-   - Verify Linear MCP is available by attempting a simple Linear query. If not: "⚠️ Linear MCP not connected. Linear features will be skipped."
-
-6. Mark Phase 0 as done in your TodoWrite checklist. Tell Juan:
+6. Write state. Mark Phase 0 done.
    ```
    ✅ Phase 0 complete — config loaded.
    Moving to Phase 1: Discovery.
@@ -105,43 +147,42 @@ Before anything else, create a TodoWrite checklist:
 
 ## Phase 1 — Discovery
 
-**Do NOT proceed to Phase 2 until the user confirms understanding.**
+**Do NOT proceed to Phase 2 without user confirmation.**
 
-1. If `$ARGUMENTS` is provided, use it as the task description. Otherwise ask:
+1. If `$ARGUMENTS` provided, use as task description. Otherwise:
    ```
    🎯 ¿Qué vamos a construir hoy? / What are we building today?
    ```
 
-2. Listen to Juan's full explanation. Do NOT interrupt.
+2. Listen fully. Do NOT interrupt.
 
 3. Assess scope:
-   - **Small** (bug fix, config change, copy update): proceed directly
-   - **Medium** (new endpoint, new component, refactor): proceed with spike
-   - **Large** (new feature, major refactor, new system): suggest `/feature-dev` for implementation
+   - **Small** — bug fix, config change, copy update, typo
+   - **Medium** — new endpoint, new component, moderate refactor
+   - **Large** — new feature, major refactor, new system
 
-4. If scope is **large**:
+4. If **large**, offer `/feature-dev`:
    ```
-   📐 This looks like a big one. Want me to use /feature-dev for the implementation phase?
-   (I'll still handle the spike, Linear tracking, PR, and review)
+   📐 Big task. Use /feature-dev for implementation?
+   (I'll still handle spike, Linear, PR, and review)
    ```
-   Record Juan's answer for Phase 4.
 
-5. Confirm understanding:
+5. Confirm:
    ```
    📋 Here's what I understood:
    
-   Task: [1-2 sentence summary]
+   Task: [summary]
    Scope: [small/medium/large]
-   Approach: [brief technical direction]
+   Approach: [direction]
    
-   Good to go? Or want to adjust anything?
+   Good to go?
    ```
 
-6. Wait for Juan's confirmation before proceeding. Do NOT move forward without explicit confirmation.
+6. **Wait for confirmation.** Do NOT advance without it.
 
-7. Once confirmed, mark Phase 1 as done in your TodoWrite checklist. Tell Juan:
+7. Write state (task, scope, useFeatureDev). Mark Phase 1 done.
    ```
-   ✅ Phase 1 complete — task understood.
+   ✅ Phase 1 complete.
    Moving to Phase 2: Duplicate Check.
    ```
 
@@ -149,37 +190,33 @@ Before anything else, create a TodoWrite checklist:
 
 ## Phase 2 — Duplicate Check
 
-**Do NOT proceed to Phase 3 until duplicates have been checked and the user has decided.**
-**Do NOT skip this phase. Even if the task seems unique, run the check.**
+**Do NOT proceed to Phase 3 without completing this check.**
+**Run this even for trivial tasks.**
 
-1. Invoke the **duplicate-checker** agent with the task description from Phase 1.
+1. Invoke **duplicate-checker** agent with the task description.
 
-2. The agent will search Linear and GitHub and return findings tagged HIGH/MEDIUM/LOW.
+2. The agent does **semantic comparison** — reads full issue descriptions and PR bodies, uses judgment to assess overlap (not keyword grep).
 
-3. If **duplicates found**, present them:
+3. If **duplicates found**:
    ```
-   🔎 Found some related work:
+   🔎 Found related work:
    
-   🔴 HIGH: [title] — [Linear issue ID or PR #] — [URL]
-   🟡 MEDIUM: [title] — [Linear issue ID or PR #] — [URL]
-   🟢 LOW: [title] — [Linear issue ID or PR #] — [URL]
+   🔴 HIGH: [title] — [ID] — [URL]
+   🟡 MEDIUM: [title] — [ID] — [URL]
    
-   Options:
-   1. 👀 Review existing work (I'll show you the details)
-   2. ⏩ Proceed anyway (start fresh)
-   3. 🚫 Abandon (this is already being handled)
+   1. 👀 Review existing work
+   2. ⏩ Proceed anyway
+   3. 🚫 Abandon
    ```
 
-4. If Juan chooses to **review**: show the issue/PR details and URLs, then ask if they want to proceed or stop.
-
-5. If **no duplicates found**:
+4. If **clear**:
    ```
-   ✅ No duplicate work found in Linear or GitHub. Clear to proceed.
+   ✅ No duplicates. Clear to proceed.
    ```
 
-6. Mark Phase 2 as done in your TodoWrite checklist. Tell Juan:
+5. Write state. Mark Phase 2 done.
    ```
-   ✅ Phase 2 complete — no conflicts found.
+   ✅ Phase 2 complete.
    Moving to Phase 3: Spike & Planning.
    ```
 
@@ -187,117 +224,106 @@ Before anything else, create a TodoWrite checklist:
 
 ## Phase 3 — Spike & Planning
 
-**Do NOT proceed to Phase 4 until the spike is created, brainstorming is done, and the user confirms.**
-**Do NOT write any implementation code during this phase. This is planning only.**
+**Do NOT proceed to Phase 4 without completing planning.**
+**Do NOT write implementation code. Planning only.**
 
-1. Read the learned config to get:
-   - The "Spike" label ID from `linear.labels`
-   - The "In Progress" state ID from `linear.workflowStates`
-   - The team ID from `linear.teamId`
+**Adapts to scope:**
 
-2. Create a spike issue in Linear using MCP:
-   - **Title**: `Spike: [task summary]`
-   - **Label**: Spike (using the learned label ID)
-   - **State**: In Progress (using the learned state ID)
-   - **Team**: using the learned team ID
-   - **Description**: Initial context from Phase 1
+### Small Scope
+No spike issue. Quick plan confirmation:
+```
+📌 Small task — skipping formal spike.
+Plan: [1-2 sentences]
+Ready to implement?
+```
 
-3. Confirm creation:
+### Medium Scope
+Lightweight spike — one brainstorm round:
+1. Create spike in Linear (Spike label, In Progress).
+2. One focused question:
    ```
-   📌 Spike created: [ISSUE-ID] — Spike: [title]
-   
-   Let's brainstorm. I'll ask questions, challenge ideas, and we'll document everything.
-   What's your initial technical direction?
+   📌 Spike: [ISSUE-ID]
+   Quick question before we build: [key decision]
    ```
+3. Summarize in spike description, close spike.
 
-4. Enter **brainstorming loop**:
-   - Go back and forth with Juan on technical approach
-   - Discuss trade-offs, edge cases, integration points, testing strategy, risks
-   - After each significant decision block, update the spike description in Linear with structured format:
-
+### Large Scope
+Full brainstorm with **round tracking** (max 5):
+1. Create spike in Linear (Spike label, In Progress).
+2. Start:
+   ```
+   📌 Spike: [ISSUE-ID]
+   Let's brainstorm. What's your initial direction?
+   ```
+3. **After EACH exchange**, explicitly ask:
+   ```
+   📝 Round [N]/5 — Done planning or keep going?
+   1. ✅ Done — move to implementation
+   2. 🔄 More — I want to discuss [topic]
+   ```
+4. **At round 5**, force closure:
+   ```
+   📝 5 rounds done. Locking in the plan:
+   [summary]
+   Ready to implement?
+   ```
+5. Update spike description after each decision:
    ```markdown
    ## Context
-   [What problem we're solving and why]
-   
+   [Problem and why]
    ## Decisions
-   - [Decision 1]: [rationale]
-   - [Decision 2]: [rationale]
-   
+   - [Decision]: [rationale]
    ## Approach
-   [Technical approach agreed upon]
-   
+   [Agreed approach]
    ## Open Questions
-   - [Anything still unresolved]
+   - [Unresolved items]
    ```
+6. Close spike to Done.
 
-5. When planning feels complete, ask:
-   ```
-   ✅ Planning looks solid. Ready to move to implementation?
-   (I'll update the spike to Done and create the task issue)
-   ```
-
-6. On confirmation: update spike status to **Done** in Linear.
-
-7. Mark Phase 3 as done in your TodoWrite checklist. Tell Juan:
-   ```
-   ✅ Phase 3 complete — spike documented and closed.
-   Moving to Phase 4: Implementation.
-   ```
+**All scopes:** Write state (spike info if created). Mark Phase 3 done.
+```
+✅ Phase 3 complete — planning done.
+Moving to Phase 4: Implementation.
+```
 
 ---
 
 ## Phase 4 — Implementation
 
-**You may NOW write code. Not before this point.**
+**You may NOW write code. Not before.**
 
-1. Create a **task issue** in Linear:
-   - **Title**: task summary from Phase 1
-   - **State**: In Progress
-   - **Description**: plan summary from the spike + link to spike issue
-   - Link to the spike issue if Linear MCP supports relations
+1. Create **task issue** in Linear (In Progress, linked to spike if exists).
 
-2. Create a **branch** using the learned naming convention:
-   - Read `github.branchPattern` from config
-   - Incorporate the Linear issue ID (e.g., `feat/DOJO-123-add-payment-flow`)
-   - If branch already exists, append a numeric suffix (`-2`, `-3`, etc.)
-   - Run: `git checkout -b [branch-name]`
+2. Create **branch** using learned naming + Linear issue ID. Collision → append `-2`.
 
-3. Confirm:
+3. Write state (task ID, URL, branch).
    ```
-   🌿 Branch created: [branch-name]
-   📋 Task: [ISSUE-ID] — [title]
+   🌿 Branch: [branch-name]
+   📋 Task: [ISSUE-ID]
+   Let's build.
+   ```
+
+4. If **using /feature-dev**:
+   ```
+   ⏸️ Invoke /feature-dev now. Say "ready for PR" when done.
+   ```
+   Write state with `status: "paused-for-feature-dev"`. Stop.
+
+5. If **not using /feature-dev**: code with Juan.
+
+6. **Pre-PR checklist:**
+   ```
+   🔍 Pre-PR Check:
+   ✅/❌ Lint: [result]
+   ✅/❌ Tests: [result]
+   📊 Changes: [files, +insertions, -deletions]
    
-   Let's build this.
+   Ready for PR?
    ```
 
-4. **If user chose `/feature-dev`** in Phase 1:
+7. Write state. Mark Phase 4 done.
    ```
-   ⏸️ Pausing here — invoke /feature-dev to implement.
-   When you're done, come back and say "ready for PR" and I'll pick up at Phase 5.
-   ```
-   Stop and wait. When Juan says "ready for PR" or similar, resume at Phase 5.
-
-5. **If NOT using /feature-dev**: code directly with Juan within this session. Help implement the task. When implementation feels complete:
-
-6. Pre-PR checklist (run each and report):
-   - Check if a lint command exists (look for `lint` script in package.json or common lint configs). If found, run it.
-   - Check if tests exist for the affected areas. If found, run them.
-   - Run `git --no-pager diff --stat` to show what changed.
-   - Ask Juan:
-     ```
-     🔍 Pre-PR Check:
-     ✅/❌ Lint: [result]
-     ✅/❌ Tests: [result]
-     📊 Changes: [N files changed, N insertions, N deletions]
-     
-     Anything else before we PR?
-     ```
-
-7. Wait for Juan's go-ahead before Phase 5.
-
-8. Mark Phase 4 as done in your TodoWrite checklist. Tell Juan:
-   ```
-   ✅ Phase 4 complete — implementation done, checks passed.
+   ✅ Phase 4 complete.
    Moving to Phase 5: PR & Greptile Review.
    ```
 
@@ -305,68 +331,82 @@ Before anything else, create a TodoWrite checklist:
 
 ## Phase 5 — PR & Greptile Review
 
-**Do NOT proceed to Phase 6 until the PR is created and Greptile review is resolved.**
+**Do NOT proceed to Phase 6 until Greptile gives 5/5 or user explicitly skips.**
 
-1. Push the branch:
+1. Push branch:
    ```bash
    git push -u origin [branch-name]
    ```
 
-2. Create PR via `gh`:
-   - **Title**: follow learned `github.prTitlePattern` from config, incorporating issue ID
-   - **Body**: include change summary, link to Linear task issue, link to spike issue, test plan
-   - Run: `gh pr create --title "[title]" --body "[body]"`
+2. Create PR via `gh` (learned title pattern, body with Linear links + test plan).
 
-3. Confirm:
+3. Write state (PR number, URL).
    ```
    🚀 PR created: [PR URL]
-   
-   ⏳ Waiting for Greptile review... (initial wait: 6 minutes)
    ```
 
-4. Run the Greptile wait script:
+4. **Greptile review flow (non-blocking):**
+   ```
+   ⏳ Greptile reviews automatically on PR creation. Usually takes ~6 minutes.
+   Say "check greptile" when you want me to look for the review.
+   ```
+
+5. When user says **"check greptile"**, run a single instant check:
    ```bash
-   bash "${CLAUDE_PLUGIN_ROOT}/scripts/wait-greptile.sh" [PR_NUMBER] [OWNER/REPO]
+   bash "${CLAUDE_PLUGIN_ROOT}/scripts/check-greptile.sh" [PR_NUMBER] [OWNER/REPO]
    ```
 
-5. Parse the script output:
-   - If **`TIMEOUT`**: ask Juan:
-     ```
-     ⏰ Greptile hasn't reviewed after 15 minutes.
-     1. ⏳ Wait 5 more minutes
-     2. ⏩ Proceed to human review without Greptile
-     3. 🔗 Check manually: [PR URL]
-     ```
-   - If **`NO_GREPTILE`** (bot not configured): skip to Phase 6.
-   - If **review received**: parse the review content.
+6. Parse result:
 
-6. Evaluate Greptile review:
-   - If **clean / 5 out of 5 / no significant issues**: 
+   - **`NO_REVIEW`** — not yet:
      ```
-     ✅ Greptile approved! Score: 5/5
+     🕐 No review yet. Wait a bit and say "check greptile" again.
      ```
-     Proceed to Phase 6.
-   
-   - If **has recommendations**:
+
+   - **`NO_GREPTILE`** — bot not configured:
      ```
-     📝 Greptile feedback:
+     ℹ️ Greptile not configured on this repo. Skipping.
+     ```
+     Write state with `greptileStatus: "skipped"`. Proceed to Phase 6.
+
+   - **Score is 5/5 or review is clean:**
+     ```
+     ✅ Greptile approved! 5/5
+     ```
+     Write state with `greptileStatus: "approved"`. Proceed to Phase 6.
+
+   - **Score < 5/5 or has recommendations:**
+     ```
+     📝 Greptile feedback (Round [N]):
      
      [List each recommendation concisely]
      
      Let me address these...
      ```
-     Address the feedback, commit fixes, push, and re-run the wait script.
+     Address the feedback. Commit fixes. Push.
+     Then **trigger Greptile re-review** by commenting on the PR:
+     ```bash
+     gh pr comment [PR_NUMBER] --body "@greptile review"
+     ```
+     Increment `pr.greptileRounds` in state file. Tell Juan:
+     ```
+     🔄 Fixes pushed + Greptile re-review requested (Round [N]).
+     Wait ~3-4 minutes, then say "check greptile" again.
+     ```
 
-7. **Greptile loop guard**: if this is the **3rd iteration** and still getting feedback:
+7. **Repeat step 5-6** until Greptile gives 5/5. Each round: fix → push → `@greptile review` → wait → check.
+
+8. **Loop guard** — after 3 rounds without 5/5:
    ```
-   ⚠️ 3 rounds of Greptile feedback. This might need human eyes.
-   1. 🔄 Try one more round
+   ⚠️ 3 rounds with Greptile. Options:
+   1. 🔄 Keep going (fix + re-trigger)
    2. ⏩ Proceed to human review anyway
    ```
+   If user chooses to proceed, write state with `greptileStatus: "partial"`.
 
-8. Mark Phase 5 as done in your TodoWrite checklist. Tell Juan:
+9. Mark Phase 5 done.
    ```
-   ✅ Phase 5 complete — PR created, Greptile resolved.
+   ✅ Phase 5 complete — Greptile [approved/partial/skipped].
    Moving to Phase 6: Handoff.
    ```
 
@@ -374,63 +414,94 @@ Before anything else, create a TodoWrite checklist:
 
 ## Phase 6 — Handoff
 
-1. Run the reviewer assignment script:
+1. Run reviewer assignment:
    ```bash
-   bash "${CLAUDE_PLUGIN_ROOT}/scripts/assign-reviewer.sh" [PATH_TO_CONFIG]
+   bash "${CLAUDE_PLUGIN_ROOT}/scripts/assign-reviewer.sh" [PATH_TO_REPO_CONFIG]
    ```
-   The script returns the chosen GitHub login.
+   Returns reviewer login + pending review count.
 
-2. On **GitHub**:
-   - Add the reviewer to the PR: `gh pr edit [PR_NUMBER] --add-reviewer [REVIEWER]`
-   - Add a comment:
+2. **Offer override:**
+   ```
+   🎯 Next reviewer: @[REVIEWER] ([N] pending reviews)
+   1. ✅ Assign @[REVIEWER]
+   2. 🔄 Someone else → [list pool]
+   ```
+
+3. On **GitHub**:
+   - `gh pr edit [PR_NUMBER] --add-reviewer [REVIEWER]`
+   - Comment:
      ```
      👋 @[REVIEWER] — ready for review!
-     
-     📋 Linear: [TASK_ISSUE_URL]
-     📌 Spike: [SPIKE_ISSUE_URL]  
-     🤖 Greptile: [approved ✅ / skipped ⏭️ / N rounds of feedback]
+     📋 Linear: [TASK_URL]
+     📌 Spike: [SPIKE_URL]
+     🤖 Greptile: [status]
      ```
 
-3. On **Linear** (via MCP):
-   - Update the task issue state to **In Review** or **Pending Review** (using learned state ID)
-   - Add a comment:
-     ```
-     PR ready for review: [PR_URL]
-     Reviewer: [REVIEWER_NAME]
-     Greptile: [status]
-     ```
+4. On **Linear**:
+   - Update task to In Review / Pending Review
+   - Comment: PR URL + reviewer + Greptile status
 
-4. Show Juan the **final summary**:
+5. Summary:
    ```
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   ✅ juan-workflow complete!
+   ✅ Review assigned!
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   
    📌 Spike: [SPIKE-ID] → Done
    📋 Task:  [TASK-ID]  → In Review
-   🌿 Branch: [branch-name]
-   🔗 PR: [PR_URL]
+   🌿 Branch: [branch]
+   🔗 PR: [URL]
    🤖 Greptile: [status]
-   👤 Reviewer: [REVIEWER_NAME]
+   👤 Reviewer: [NAME]
    
-   Go grab a coffee ☕ — you've earned it.
+   Say "check merge" when it's merged → Phase 7 cleanup.
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    ```
 
-5. Mark Phase 6 as done in your TodoWrite checklist. All phases complete.
+6. Write state. Mark Phase 6 done.
+
+---
+
+## Phase 7 — Post-Merge Cleanup
+
+Triggered by: "check merge", "merged", "cleanup", "phase 7", or invoking `/juan-is-working` when Phase 6 is complete.
+
+1. Check merge status:
+   ```bash
+   gh pr view [PR_NUMBER] --json state,mergedAt
+   ```
+   - Not merged → "PR not merged yet. Say 'check merge' when it is."
+   - Merged → proceed.
+
+2. On **Linear**: update task to **Done**. Comment: "Merged. 🎉"
+
+3. On **GitHub**: delete branch:
+   ```bash
+   git push origin --delete [branch-name] 2>/dev/null
+   git --no-pager branch -d [branch-name] 2>/dev/null
+   ```
+
+4. Update state: `status: "complete"`.
+   ```
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   🎉 juan-workflow COMPLETE!
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   📌 Spike: [SPIKE-ID] → Done
+   📋 Task:  [TASK-ID]  → Done ✅
+   🔗 PR: [URL] → Merged ✅
+   🗑️ Branch: [branch] → Deleted
+   
+   Go grab a coffee ☕
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ```
+
+5. Mark Phase 7 done. All complete.
 
 ---
 
 ## Error Recovery
 
-- **If Linear MCP goes down mid-workflow**: warn Juan, continue GitHub-only, note which Linear operations were skipped.
-- **If `gh` commands fail**: show the error, suggest manual steps, don't block the workflow.
-- **If config disappears mid-workflow**: re-trigger Phase 0, then resume from where we were.
-- **If Juan says "stop" or "cancel" at any point**: gracefully stop, show what's been created so far (issues, branches, PRs) so nothing is orphaned.
-
-## Resumability
-
-If Juan comes back and says "ready for PR" or "continue" or "pick up where we left off":
-- Check git branch to infer what phase we might be in
-- Check Linear for recent issues with the spike label
-- Ask Juan to confirm and resume from the appropriate phase
+- **Linear MCP down**: warn, continue GitHub-only, note skipped ops.
+- **`gh` fails**: show error, suggest manual steps, don't block.
+- **Config missing mid-workflow**: re-trigger Phase 0, resume from state file.
+- **"stop" or "cancel"**: update state to `"paused"`, show what's been created.
+- **State file corrupted**: ask Juan what phase, recreate state.

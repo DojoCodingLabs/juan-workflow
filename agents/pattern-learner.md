@@ -90,13 +90,47 @@ Use the Linear MCP tools to discover:
    - Display name
    - Email (if available)
 
-## Output
+## Output — Split Config Strategy
 
-Write the config to `.claude/juan-workflow-learned.local.json` in the project root.
+Write **TWO** config files:
 
-Make sure the `.claude/` directory exists first. If `.gitignore` exists, check if `*.local.json` or `juan-workflow-learned.local.json` is already gitignored. If not, suggest adding it (but don't modify .gitignore without asking).
+### 1. Org Config — `~/.juan-workflow/org-config.json`
 
-### Config Schema
+Shared across all repos in the same org. Contains Linear data.
+
+Create `~/.juan-workflow/` directory if it doesn't exist.
+
+```json
+{
+  "version": "1.0.0",
+  "timestamp": "2026-02-08T12:00:00Z",
+  "linear": {
+    "teamId": "abc-123",
+    "teamSlug": "dojo",
+    "teamName": "Dojo",
+    "workflowStates": [
+      { "id": "state-1", "name": "Backlog", "type": "unstarted" },
+      { "id": "state-3", "name": "In Progress", "type": "started" },
+      { "id": "state-4", "name": "In Review", "type": "started" },
+      { "id": "state-5", "name": "Done", "type": "completed" }
+    ],
+    "labels": [
+      { "id": "label-1", "name": "Bug" },
+      { "id": "label-3", "name": "Spike" }
+    ],
+    "issuePrefix": "DOJO",
+    "members": [
+      { "id": "member-1", "name": "Juan Guerrero", "email": "juan@dojocoding.io" }
+    ]
+  }
+}
+```
+
+### 2. Repo Config — `.claude/juan-workflow-learned.local.json`
+
+Repo-specific GitHub data. Lives in the project root.
+
+Make sure `.claude/` directory exists. If `.gitignore` exists, check if the file is gitignored. If not, suggest adding it.
 
 ```json
 {
@@ -108,8 +142,7 @@ Make sure the `.claude/` directory exists first. If `.gitignore` exists, check i
     "branchPattern": "{type}/{issueId}-{description}",
     "branchExamples": [
       "feat/DOJO-42-add-search",
-      "fix/DOJO-99-nav-bug",
-      "chore/DOJO-101-update-deps"
+      "fix/DOJO-99-nav-bug"
     ],
     "prTitlePattern": "{type}: {description}",
     "teamMembers": [
@@ -121,27 +154,6 @@ Make sure the `.claude/` directory exists first. If `.gitignore` exists, check i
       "botUsername": "greptile-apps[bot]"
     }
   },
-  "linear": {
-    "teamId": "abc-123",
-    "teamSlug": "dojo",
-    "teamName": "Dojo",
-    "workflowStates": [
-      { "id": "state-1", "name": "Backlog", "type": "unstarted" },
-      { "id": "state-2", "name": "Todo", "type": "unstarted" },
-      { "id": "state-3", "name": "In Progress", "type": "started" },
-      { "id": "state-4", "name": "In Review", "type": "started" },
-      { "id": "state-5", "name": "Done", "type": "completed" }
-    ],
-    "labels": [
-      { "id": "label-1", "name": "Bug" },
-      { "id": "label-2", "name": "Feature" },
-      { "id": "label-3", "name": "Spike" }
-    ],
-    "issuePrefix": "DOJO",
-    "members": [
-      { "id": "member-1", "name": "Juan Guerrero", "email": "juan@dojocoding.io" }
-    ]
-  },
   "reviewers": {
     "pool": ["beja", "will", "garbanzo"],
     "lastAssignedIndex": -1
@@ -150,16 +162,17 @@ Make sure the `.claude/` directory exists first. If `.gitignore` exists, check i
 ```
 
 **Important:**
-- The example values above are EXAMPLES. Use the ACTUAL data from the repo and Linear workspace.
-- The `reviewers.pool` should contain GitHub logins of team members (excluding the user running the workflow and any bots).
-- Set `lastAssignedIndex` to `-1` on first creation (so the first assignment picks index 0).
-- Use ISO 8601 format for the timestamp.
-- If Linear MCP is unavailable, write the config with the `linear` section set to `null` and warn the calling agent.
-- If `gh` CLI is not authenticated, report the error immediately.
+- Example values above are EXAMPLES. Use ACTUAL data.
+- `reviewers.pool`: GitHub logins of team members (exclude the workflow user and bots).
+- `lastAssignedIndex`: `-1` on first creation.
+- ISO 8601 timestamps.
+- If Linear MCP is unavailable, skip org config and set `linear` to `null`. Warn the caller.
+- If `gh` CLI is not authenticated, report immediately.
+- If org config already exists and is <7 days old, SKIP writing it — only write repo config.
 
 ## Behavior
 
-- Be fast. Don't explain what you're doing — just do it.
-- If a command fails, try an alternative approach before giving up.
-- If you can't determine a pattern (e.g., branches are all over the place), pick the most common pattern and note the uncertainty in `branchExamples`.
-- Always finish by printing a one-line confirmation: "✅ Config written to .claude/juan-workflow-learned.local.json"
+- Be fast. Don't explain — just do it.
+- If a command fails, try an alternative before giving up.
+- If you can't determine a pattern, pick the most common one and note uncertainty.
+- Always finish with: "✅ Config written."
