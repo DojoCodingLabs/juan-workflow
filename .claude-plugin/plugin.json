@@ -1,0 +1,28 @@
+{
+  "name": "juan-workflow",
+  "version": "1.0.0",
+  "description": "The non-engineer's development guardrails. A full dev lifecycle workflow — from spike to PR to review — built by a Head of Product who got tired of asking engineers for permission to ship. By Dojo Coding Labs.",
+  "author": {
+    "name": "Dojo Coding Labs",
+    "url": "https://dojocoding.io"
+  },
+  "homepage": "https://github.com/DojoCodingLabs/juan-workflow",
+  "repository": "https://github.com/DojoCodingLabs/juan-workflow",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "claude-code-plugin",
+    "claude",
+    "anthropic",
+    "workflow",
+    "linear",
+    "github",
+    "greptile",
+    "code-review",
+    "project-management",
+    "developer-workflow",
+    "spike",
+    "planning",
+    "dojo-coding"
+  ]
+}

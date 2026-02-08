@@ -1,0 +1,38 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "juan-workflow",
+  "version": "1.0.0",
+  "description": "The non-engineer's development guardrails. A full dev lifecycle workflow — from spike to PR to review — built by a Head of Product who got tired of asking engineers for permission to ship.",
+  "owner": {
+    "name": "Dojo Coding Labs",
+    "email": "team@dojocoding.io"
+  },
+  "plugins": [
+    {
+      "name": "juan-workflow",
+      "description": "Full dev lifecycle orchestrator: spike planning in Linear, duplicate detection, implementation tracking, Greptile-gated PRs, and round-robin reviewer assignment. One command — /juan-is-working — handles the ceremony so you focus on the creative work.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Dojo Coding Labs",
+        "email": "team@dojocoding.io"
+      },
+      "source": "./",
+      "homepage": "https://github.com/DojoCodingLabs/juan-workflow",
+      "category": "workflow",
+      "keywords": [
+        "claude-code",
+        "claude-code-plugin",
+        "workflow",
+        "linear",
+        "github",
+        "greptile",
+        "code-review",
+        "project-management",
+        "developer-workflow",
+        "spike",
+        "planning",
+        "dojo-coding"
+      ]
+    }
+  ]
+}
