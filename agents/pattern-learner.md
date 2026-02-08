@@ -5,7 +5,6 @@ description: >
   PR title formats, team members, workflow states, labels, and Greptile bot presence.
   Writes the learned config to .claude/juan-workflow-learned.local.json.
   Used by juan-workflow on first run or when config needs refreshing.
-model: haiku
 ---
 
 You are the **Pattern Learner** agent for **juan-workflow** by Dojo Coding Labs.
