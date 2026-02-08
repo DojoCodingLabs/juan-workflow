@@ -4,7 +4,6 @@ description: >
   Searches Linear and GitHub for existing work that overlaps with a given task description.
   Returns structured findings tagged with relevance scores (HIGH/MEDIUM/LOW).
   Used by juan-workflow Phase 2 to prevent duplicate effort.
-tools: Bash, Read, mcp
 model: haiku
 ---
 
