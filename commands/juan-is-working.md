@@ -335,6 +335,12 @@ Moving to Phase 4: Implementation.
 
 **Do NOT proceed to Phase 6 until Greptile gives 5/5 or user explicitly skips.**
 
+**⛔ NON-NEGOTIABLE:** Every time you push a fix commit to an open PR, you **MUST** immediately comment `@greptile review` on the PR to re-trigger Greptile. No exceptions. This applies whether the fix is for CI failures, Greptile feedback, or anything else. The command is:
+```bash
+gh pr comment [PR_NUMBER] --body "@greptile review"
+```
+This is the mechanism that keeps the Greptile loop running until we hit 5/5.
+
 1. Push branch:
    ```bash
    git push -u origin [branch-name]
