@@ -58,6 +58,18 @@ Every phase confirms before advancing. Everything is cross-linked (Linear ↔ Gi
 
 That's it. Type `/juan-workflow:juan-is-working` and you're off.
 
+### Updating
+
+```bash
+# Update the marketplace catalog first:
+/plugin marketplace update DojoCodingLabs/juan-workflow
+
+# Then update the plugin:
+/plugin update juan-workflow@juan-workflow
+```
+
+Restart your Claude Code session after updating.
+
 > **Requires:**
 > - [Claude Code](https://code.claude.com) with plugin support
 > - [GitHub CLI](https://cli.github.com) (`gh`) — authenticated
