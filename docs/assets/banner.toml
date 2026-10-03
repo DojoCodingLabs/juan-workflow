@@ -1,0 +1,11 @@
+name = "juan-workflow"
+tagline = "The non-engineer’s development [guardrails]"
+chips = ["Spike / PR / Review"]
+meta = "Open source · Claude Code"
+tile = "/"
+
+[card]
+kind = "ledger"
+label = "Workflow"
+status = "v2.1.0 · MIT"
+rows = [["Duplicates", "Check Linear + GitHub first", "phase 2"], ["Spike", "Brainstorm, document in Linear", "phase 3"], ["PR + Review", "Push PR, wait for Greptile", "phase 5"]]

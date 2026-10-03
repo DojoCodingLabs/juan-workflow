@@ -1,11 +1,23 @@
-# 🏗️ juan-workflow — Claude Code Plugin
+<p align="center">
+  <a href="https://dojocoding.io">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark.svg">
+      <source media="(prefers-color-scheme: light)" srcset="docs/assets/banner-light.svg">
+      <img alt="juan-workflow by Dojo Coding: The non-engineer’s development guardrails" src="docs/assets/banner-light.svg" width="100%">
+    </picture>
+  </a>
+</p>
 
-[![Claude Code Plugin](https://img.shields.io/badge/Claude_Code-Plugin-blue?logo=anthropic&logoColor=white)](https://github.com/DojoCodingLabs/juan-workflow)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![Category: Workflow](https://img.shields.io/badge/Category-Workflow-purple)](https://github.com/topics/claude-code-plugin)
-[![Free & Open Source](https://img.shields.io/badge/Free-Open_Source-brightgreen)](https://github.com/DojoCodingLabs/juan-workflow)
+# juan-workflow
 
-### The non-engineer's development guardrails — by [Dojo Coding Labs](https://dojocoding.io)
+**A Claude Code plugin that runs the full development lifecycle, from spike to PR to review, for non-engineers who ship code.**
+
+[![Claude Code Plugin](https://img.shields.io/badge/Claude%20Code-Plugin-201E3D?labelColor=201E3D)](https://github.com/DojoCodingLabs/juan-workflow)
+[![License: MIT](https://img.shields.io/badge/License-MIT-FF7151?labelColor=201E3D)](https://opensource.org/licenses/MIT)
+[![Category: Workflow](https://img.shields.io/badge/Category-Workflow-FF7151?labelColor=201E3D)](https://github.com/topics/claude-code-plugin)
+[![Free & Open Source](https://img.shields.io/badge/Free-Open%20Source-FF7151?labelColor=201E3D)](https://github.com/DojoCodingLabs/juan-workflow)
+
+[Get started](#installation) · [What it does](#what-it-does) · [Usage](#usage) · [Contribute](#contributing) · [Report an issue](https://github.com/DojoCodingLabs/juan-workflow/issues/new)
 
 ---
 
@@ -234,11 +246,8 @@ This started as a joke plugin for one non-engineer. Now the whole team uses it. 
 
 ## License
 
-MIT License — free to use, modify, and distribute.
-
----
+MIT License — free to use, modify, and distribute. Built by [Dojo Coding](https://dojocoding.io).
 
 <p align="center">
-  <strong>🏗️ From product guy to shipping code — one /juan-is-working at a time.</strong><br>
-  <em>Free. Open source. By <a href="https://dojocoding.io">Dojo Coding Labs</a>.</em>
+  <a href="https://dojocoding.io"><img src="docs/assets/dojocoding-mark.png" alt="Dojo Coding" width="48"></a>
 </p>
